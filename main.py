@@ -52,6 +52,11 @@ CANDIDATES = [
         "I've just gotten fluent at pretending.",
         5, 3, 4, 4, 3,
     ),
+    (
+        "I nod along in every meeting, then look up what you meant "
+        "after you leave.",
+        5, 3, 3, 4, 4,
+    ),
 ]
 
 WEIGHTS = (5, 4, 3, 2, 1)
@@ -67,8 +72,22 @@ def score(candidate):
 
 
 def pick_line():
-    """Return the highest-scoring candidate line."""
-    return max(CANDIDATES, key=score)[0]
+    """Return the highest-scoring candidate line.
+
+    Only candidates that pass the gate are eligible, so a line that
+    breaks the 200-character cap can never be picked by accident.
+    """
+    eligible = [c for c in CANDIDATES if _gate_ok(c[0])]
+    return max(eligible, key=score)[0]
+
+
+def _gate_ok(line: str) -> bool:
+    """True when the line passes the same gate validate() enforces."""
+    try:
+        validate(line)
+    except ValueError:
+        return False
+    return True
 
 
 def validate(line: str) -> None:
